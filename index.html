@@ -38,7 +38,7 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
     }
     button {
@@ -170,7 +170,8 @@
         <button onclick="showPanel('contacts')">Contacts</button>
         <button onclick="showPanel('email')">Email</button>
         <button onclick="showPanel('notes')">Notes</button>
-        <button onclick="showPanel('photos')">Photos</button>
+	<button onclick="showPanel('photos')">Photos</button>
+	<button onclick="showPanel('settings')">Settings</button>
       </div>
 
       <div id="contacts" class="panel active">
@@ -202,8 +203,14 @@
     </div>
   </div>
 
+<div id="settings" class="panel">
+  <input id="oldPasscode" placeholder="Current passcode">
+  <input id="newPasscode" placeholder="New passcode">
+  <button class="small-btn" onclick="changePasscode()">Change Passcode</button>
+</div>
+
   <script>
-    const SECRET = "713";
+let SECRET = localStorage.getItem("qc_passcode") || "713";
     let input = "";
 
     const display = document.getElementById("display");
@@ -405,6 +412,29 @@
       setData("qc_photos", photos);
       loadPhotos();
     }
+
+function changePasscode() {
+  const oldCode = document.getElementById("oldPasscode").value.trim();
+  const newCode = document.getElementById("newPasscode").value.trim();
+
+  if (oldCode !== SECRET) {
+    alert("Current passcode is wrong.");
+    return;
+  }
+
+  if (!newCode) {
+    alert("Enter a new passcode.");
+    return;
+  }
+
+  SECRET = newCode;
+  localStorage.setItem("qc_passcode", newCode);
+
+  document.getElementById("oldPasscode").value = "";
+  document.getElementById("newPasscode").value = "";
+
+  alert("Passcode changed.");
+}
   </script>
 </body>
 </html>
