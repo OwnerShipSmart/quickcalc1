@@ -1,278 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calc Pro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+    }
+    .app {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: #000;
+      padding: 18px;
+    }
+    .display {
+      width: 100%;
+      height: 110px;
+      background: #111;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 42px;
+      text-align: right;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    button {
+      border: none;
+      border-radius: 50px;
+      min-height: 72px;
+      font-size: 26px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+    }
+    button:active { transform: scale(0.96); }
+    .op { background: #ff9500; }
+    .top { background: #a5a5a5; color: black; }
+    .zero { grid-column: span 2; text-align: left; padding-left: 30px; }
 
-<meta name="apple-mobile-web-app-title" content="Calc Pro">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<style>
-body {
-  margin: 0;
-  background: #000;
-  font-family: Arial;
-  display: flex;
-  justify-content: center;
-}
-
-.app {
-  width: 100%;
-  max-width: 420px;
-  padding: 15px;
-}
-
-.display {
-  height: 100px;
-  background: #111;
-  color: white;
-  font-size: 40px;
-  text-align: right;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 10px;
-}
-
-button {
-  height: 70px;
-  border: none;
-  border-radius: 50px;
-  font-size: 24px;
-  background: #333;
-  color: white;
-}
-
-.op { background: orange; }
-.top { background: #aaa; color: black; }
-.zero { grid-column: span 2; }
-
-#vault { display:none; }
-
-.tabs {
-  display:grid;
-  grid-template-columns: repeat(5,1fr);
-  gap:6px;
-  margin-bottom:10px;
-}
-
-.tabs button {
-  height:40px;
-  font-size:12px;
-  border-radius:10px;
-}
-
-.panel { display:none; }
-.panel.active { display:block; }
-
-input, textarea {
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border-radius:10px;
-  border:none;
-  background:#111;
-  color:white;
-}
-
-.card {
-  background:#111;
-  padding:10px;
-  margin-top:10px;
-  border-radius:10px;
-}
-
-.small-btn {
-  height:40px;
-  border-radius:10px;
-  margin-top:5px;
-}
-</style>
+    #vault {
+      display: none;
+      padding-bottom: 40px;
+    }
+    .vault-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .vault-head h2 { margin: 0; }
+    .small-btn {
+      min-height: 42px;
+      font-size: 15px;
+      border-radius: 12px;
+      padding: 8px 14px;
+      background: #222;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tabs button {
+      min-height: 44px;
+      font-size: 14px;
+      border-radius: 12px;
+      background: #1d1d1d;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    input, textarea {
+      width: 100%;
+      padding: 13px;
+      margin: 6px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #181818;
+      color: white;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .card {
+      background: #151515;
+      padding: 12px;
+      border-radius: 14px;
+      margin: 10px 0;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .row a, .row button {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      background: #292929;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      min-height: auto;
+    }
+    .danger { background: #5b1111 !important; }
+    img {
+      width: 100%;
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <div id="calc">
+      <div id="display" class="display">0</div>
+      <div class="grid">
+        <button class="top" onclick="clearCalc()">AC</button>
+        <button class="top" onclick="backspace()">⌫</button>
+        <button class="top" onclick="press('%')">%</button>
+        <button class="op" onclick="press('÷')">÷</button>
 
-<div class="app">
+        <button onclick="press('7')">7</button>
+        <button onclick="press('8')">8</button>
+        <button onclick="press('9')">9</button>
+        <button class="op" onclick="press('×')">×</button>
 
-<div id="calc">
-<div id="display" class="display">0</div>
+        <button onclick="press('4')">4</button>
+        <button onclick="press('5')">5</button>
+        <button onclick="press('6')">6</button>
+        <button class="op" onclick="press('-')">−</button>
 
-<div class="grid">
-<button class="top" onclick="clearCalc()">AC</button>
-<button class="top" onclick="back()">⌫</button>
-<button class="top" onclick="press('%')">%</button>
-<button class="op" onclick="press('/')">÷</button>
+        <button onclick="press('1')">1</button>
+        <button onclick="press('2')">2</button>
+        <button onclick="press('3')">3</button>
+        <button class="op" onclick="press('+')">+</button>
 
-<button onclick="press('7')">7</button>
-<button onclick="press('8')">8</button>
-<button onclick="press('9')">9</button>
-<button class="op" onclick="press('*')">×</button>
+        <button class="zero" onclick="press('0')">0</button>
+        <button onclick="press('.')">.</button>
+        <button class="op" onclick="calculate()">=</button>
+      </div>
+    </div>
 
-<button onclick="press('4')">4</button>
-<button onclick="press('5')">5</button>
-<button onclick="press('6')">6</button>
-<button class="op" onclick="press('-')">−</button>
+    <div id="vault">
+      <div class="vault-head">
+        <h2>Private</h2>
+        <button class="small-btn" onclick="lockVault()">Lock</button>
+      </div>
 
-<button onclick="press('1')">1</button>
-<button onclick="press('2')">2</button>
-<button onclick="press('3')">3</button>
-<button class="op" onclick="press('+')">+</button>
+      <div class="tabs">
+        <button onclick="showPanel('contacts')">Contacts</button>
+        <button onclick="showPanel('email')">Email</button>
+        <button onclick="showPanel('notes')">Notes</button>
+        <button onclick="showPanel('photos')">Photos</button>
+      </div>
 
-<button class="zero" onclick="press('0')">0</button>
-<button onclick="press('.')">.</button>
-<button class="op" onclick="calc()">=</button>
-</div>
-</div>
+      <div id="contacts" class="panel active">
+        <input id="contactName" placeholder="Name">
+        <input id="contactPhone" placeholder="Phone number">
+        <input id="contactEmail" placeholder="Email">
+        <button class="small-btn" onclick="addContact()">Add Contact</button>
+        <div id="contactList"></div>
+      </div>
 
-<div id="vault">
+      <div id="email" class="panel">
+        <input id="emailTo" placeholder="To email">
+        <input id="emailSubject" placeholder="Subject">
+        <textarea id="emailBody" placeholder="Write email here..."></textarea>
+        <button class="small-btn" onclick="sendEmail()">Send Through Mail</button>
+      </div>
 
-<h3>Private</h3>
-<button onclick="lock()">Lock</button>
+      <div id="notes" class="panel">
+        <textarea id="noteBox" placeholder="Private notes..."></textarea>
+        <button class="small-btn" onclick="saveNote()">Save Note</button>
+        <div id="noteList"></div>
+      </div>
 
-<div class="tabs">
-<button onclick="show('contacts')">Contacts</button>
-<button onclick="show('email')">Email</button>
-<button onclick="show('notes')">Notes</button>
-<button onclick="show('photos')">Photos</button>
-<button onclick="show('settings')">Settings</button>
-</div>
+      <div id="photos" class="panel">
+        <input type="file" id="photoInput" accept="image/*">
+        <button class="small-btn" onclick="savePhoto()">Save Photo</button>
+        <div id="photoList"></div>
+      </div>
+    </div>
+  </div>
 
-<div id="contacts" class="panel active">
-<input id="name" placeholder="Name">
-<input id="phone" placeholder="Phone">
-<input id="email" placeholder="Email">
-<button class="small-btn" onclick="addContact()">Add</button>
-<div id="contactList"></div>
-</div>
+  <script>
+    const SECRET = "713";
+    let input = "";
 
-<div id="email" class="panel">
-<input id="emailTo" placeholder="To">
-<input id="emailSub" placeholder="Subject">
-<textarea id="emailBody"></textarea>
-<button onclick="sendEmail()">Send</button>
-</div>
+    const display = document.getElementById("display");
+    const calc = document.getElementById("calc");
+    const vault = document.getElementById("vault");
 
-<div id="notes" class="panel">
-<textarea id="note"></textarea>
-<button onclick="saveNote()">Save</button>
-<div id="notesList"></div>
-</div>
+    function press(value) {
+      if (input === "0") input = "";
+      input += value;
+      display.textContent = input;
 
-<div id="photos" class="panel">
-<input type="file" id="photo">
-<button onclick="savePhoto()">Save</button>
-<div id="photosList"></div>
-</div>
+      if (input === SECRET) {
+        openVault();
+      }
+    }
 
-<div id="settings" class="panel">
-<input id="old" placeholder="Current passcode">
-<input id="new" placeholder="New passcode">
-<button onclick="changePasscode()">Change</button>
-</div>
+    function clearCalc() {
+      input = "";
+      display.textContent = "0";
+    }
 
-</div>
-</div>
+    function backspace() {
+      input = input.slice(0, -1);
+      display.textContent = input || "0";
+    }
 
-<script>
+    function calculate() {
+      try {
+        const expression = input
+          .replace(/÷/g, "/")
+          .replace(/×/g, "*")
+          .replace(/%/g, "/100");
 
-localStorage.setItem("pass", "713");
-let SECRET = "713";
+        const result = Function('"use strict"; return (' + expression + ')')();
+        input = String(result);
+        display.textContent = input;
+      } catch {
+        input = "";
+        display.textContent = "Error";
+      }
+    }
 
-function press(v){
-input+=v;
-display.innerText=input;
-if(input===SECRET){openVault();}
-}
+    function openVault() {
+      calc.style.display = "none";
+      vault.style.display = "block";
+      loadContacts();
+      loadNotes();
+      loadPhotos();
+    }
 
-function clearCalc(){input="";display.innerText="0";}
-function back(){input=input.slice(0,-1);display.innerText=input||"0";}
+    function lockVault() {
+      vault.style.display = "none";
+      calc.style.display = "block";
+      clearCalc();
+    }
 
-function calc(){
-try{input=eval(input).toString();display.innerText=input;}
-catch{display.innerText="Error";input="";}
-}
+    function showPanel(id) {
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
 
-function openVault(){
-calcDiv.style.display="none";
-vault.style.display="block";
-loadContacts();loadNotes();loadPhotos();
-}
+    function getData(key) {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    }
 
-function lock(){
-vault.style.display="none";
-calcDiv.style.display="block";
-clearCalc();
-}
+    function setData(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
 
-function show(id){
-document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-}
+    function addContact() {
+      const name = document.getElementById("contactName").value.trim();
+      const phone = document.getElementById("contactPhone").value.trim();
+      const email = document.getElementById("contactEmail").value.trim();
 
-function changePasscode(){
-if(document.getElementById("old").value!==SECRET){alert("Wrong");return;}
-SECRET=document.getElementById("new").value;
-localStorage.setItem("pass",SECRET);
-alert("Changed");
-}
+      if (!name && !phone && !email) return;
 
-function get(key){return JSON.parse(localStorage.getItem(key)||"[]");}
-function set(key,v){localStorage.setItem(key,JSON.stringify(v));}
+      const contacts = getData("qc_contacts");
+      contacts.push({ name, phone, email });
+      setData("qc_contacts", contacts);
 
-function addContact(){
-let c=get("c");
-c.push({n:name.value,p:phone.value,e:email.value});
-set("c",c);loadContacts();
-}
+      document.getElementById("contactName").value = "";
+      document.getElementById("contactPhone").value = "";
+      document.getElementById("contactEmail").value = "";
 
-function loadContacts(){
-contactList.innerHTML="";
-get("c").forEach(c=>{
-contactList.innerHTML+=`
-<div class="card">
-${c.n}<br>${c.p}<br>${c.e}
-<br>
-<a href="tel:${c.p}">Call</a>
-<a href="sms:${c.p}">Text</a>
-<a href="mailto:${c.e}">Email</a>
-</div>`;
-});
-}
+      loadContacts();
+    }
 
-function sendEmail(){
-window.location.href=`mailto:${emailTo.value}?subject=${emailSub.value}&body=${emailBody.value}`;
-}
+    function loadContacts() {
+      const contacts = getData("qc_contacts");
+      const list = document.getElementById("contactList");
+      list.innerHTML = "";
 
-function saveNote(){
-let n=get("n");n.push(note.value);set("n",n);loadNotes();
-}
+      contacts.forEach((c, i) => {
+        const safeMessage = encodeURIComponent("Hey, can you check in with me?");
+        const subject = encodeURIComponent("Check-in");
+        const body = encodeURIComponent("Hey, can you check in with me?");
 
-function loadNotes(){
-notesList.innerHTML="";
-get("n").forEach(n=>notesList.innerHTML+=`<div class="card">${n}</div>`);
-}
+        list.innerHTML += `
+          <div class="card">
+            <strong>${c.name || "Unnamed Contact"}</strong><br>
+            ${c.phone || ""}<br>
+            ${c.email || ""}
+            <div class="row">
+              ${c.phone ? `<a href="tel:${c.phone}">Call</a>` : ""}
+              ${c.phone ? `<a href="sms:${c.phone}&body=${safeMessage}">Text</a>` : ""}
+              ${c.email ? `<a href="mailto:${c.email}?subject=${subject}&body=${body}">Email</a>` : ""}
+              <button onclick="deleteContact(${i})" class="danger">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+    }
 
-function savePhoto(){
-let f=photo.files[0];
-let r=new FileReader();
-r.onload=e=>{
-let p=get("p");p.push(e.target.result);set("p",p);loadPhotos();
-};
-r.readAsDataURL(f);
-}
+    function deleteContact(index) {
+      const contacts = getData("qc_contacts");
+      contacts.splice(index, 1);
+      setData("qc_contacts", contacts);
+      loadContacts();
+    }
 
-function loadPhotos(){
-photosList.innerHTML="";
-get("p").forEach(p=>photosList.innerHTML+=`<img src="${p}" style="width:100%">`);
-}
+    function sendEmail() {
+      const to = document.getElementById("emailTo").value.trim();
+      const subject = encodeURIComponent(document.getElementById("emailSubject").value.trim());
+      const body = encodeURIComponent(document.getElementById("emailBody").value.trim());
 
-</script>
+      if (!to) return alert("Add an email address first.");
 
+      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    }
+
+    function saveNote() {
+      const text = document.getElementById("noteBox").value.trim();
+      if (!text) return;
+
+      const notes = getData("qc_notes");
+      notes.unshift({ text, date: new Date().toLocaleString() });
+      setData("qc_notes", notes);
+
+      document.getElementById("noteBox").value = "";
+      loadNotes();
+    }
+
+    function loadNotes() {
+      const notes = getData("qc_notes");
+      const list = document.getElementById("noteList");
+      list.innerHTML = "";
+
+      notes.forEach((n, i) => {
+        list.innerHTML += `
+          <div class="card">
+            <small>${n.date}</small>
+            <p>${n.text}</p>
+            <button class="small-btn danger" onclick="deleteNote(${i})">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    function deleteNote(index) {
+      const notes = getData("qc_notes");
+      notes.splice(index, 1);
+      setData("qc_notes", notes);
+      loadNotes();
+    }
+
+    function savePhoto() {
+      const file = document.getElementById("photoInput").files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const photos = getData("qc_photos");
+        photos.unshift(e.target.result);
+        setData("qc_photos", photos);
+        document.getElementById("photoInput").value = "";
+        loadPhotos();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadPhotos() {
+      const photos = getData("qc_photos");
+      const list = document.getElementById("photoList");
+      list.innerHTML = "";
+
+      photos.forEach((src, i) => {
+        list.innerHTML += `
+          <div class="card">
+            <img src="${src}">
+            <button class="small-btn danger" onclick="deletePhoto(${i})">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    function deletePhoto(index) {
+      const photos = getData("qc_photos");
+      photos.splice(index, 1);
+      setData("qc_photos", photos);
+      loadPhotos();
+    }
+  </script>
 </body>
 </html>
